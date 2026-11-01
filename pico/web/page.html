@@ -1,0 +1,107 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width'>
+<title>WebTV Bridge</title>
+<style>/*STYLE*/</style></head><body>
+<h1>WebTV Bridge</h1>
+<nav id=tabs>
+<button data-tab=console>Box Console</button>
+<button data-tab=info>Box &amp; Bridge Info</button>
+<button data-tab=server>Server Settings</button>
+<button data-tab=os>Box OS</button>
+<button data-tab=shot>Screenshot</button>
+<button data-tab=fs>Box Filesystem</button>
+<button data-tab=remote>Remote</button>
+</nav>
+
+<section id=console>
+<pre id=out></pre>
+<form id=f><input id=in autocomplete=off placeholder='type for the box (Enter sends it with CR)'><button>Send</button></form>
+<p class=note id=ses></p>
+</section>
+
+<section id=info>
+<div id=grid></div>
+<h2>The Bridge</h2><pre id=st>...</pre>
+</section>
+
+<section id=server>
+<h2>WTVP server</h2>
+<p class=note>Where the Bridge sends the box's WebTV service connections (ports 1600 to 1699): a name or an address.
+Blank: wherever the box asks. The Bridge keeps it, and the TV's Settings shows the same one.</p>
+<form id=sv><input id=svc class=field autocomplete=off placeholder='where the box asks'><button>Save</button> <span id=svmsg class=note></span></form>
+<h2>DNS server</h2>
+<p class=note>Where the Bridge looks up names (the WTVP server's, and the box's).
+Blank: the router's, or 8.8.8.8 when it gives none.</p>
+<form id=d><input id=dns class=field autocomplete=off placeholder='automatic'><button>Save</button> <span id=dmsg class=note></span></form>
+</section>
+
+<section id=os>
+<p class=note>The Bridge reads and writes the box's disk through its loader, which runs only before the OS starts.
+So these work only while the TV shows the <b>WebTV Bridge</b> screen (Start now, Settings), the one that comes up
+when the box is switched on or restarted. Starting one stops that screen's countdown, so the OS waits until you start it.</p>
+<p class="ready" data-need=os>Checking...</p>
+<h2>Save this OS</h2><p class=note>Reads the OS from the box's disk, as it is there, and downloads it.</p>
+<button id=dl data-need=os onclick="location='/os.o'" disabled>Download</button>
+<h2>Install another OS</h2><p class=note>Writes an OS image (an _approm.o) to the slot the box isn't booting; it boots from then on.
+Keep the box on until it's done.</p>
+<input type=file id=file data-need=os disabled> <button id=inst data-need=os onclick=up() disabled>Install</button> <span id=msg></span>
+</section>
+
+<section id=shot>
+<p class=note>Grabs the picture the box is putting on the TV. The OS's screens are put together by the SOLO's compositor
+from many small pieces (cels), so the page reads those and the memory they draw from, and composites them the way the
+emulator does; the WebTV Bridge screen is a plain framebuffer. While the OS runs, the OS reads its memory for the Bridge,
+a little at a time over the parallel port (something moving on the screen meanwhile may tear); on the <b>WebTV Bridge</b>
+screen the Bridge's loader reads it.</p>
+<p class="ready" data-need=shot>Checking...</p>
+<button id=grab data-need=shot disabled>Take a screenshot</button>
+<button id=png disabled>Save as PNG</button>
+<button id=yuv disabled>Save the raw YUV</button>
+<span id=shmsg class=note></span>
+<div id=shotbox><canvas id=cv width=560 height=420></canvas></div>
+</section>
+
+<section id=fs>
+<p class=note>The box's disk: its partitions, the areas of the boot partition outside them, and the files in its FAT filesystems.
+The Bridge reaches the disk through its loader, so only while the TV shows the <b>WebTV Bridge</b> screen; the OS isn't running
+then, so nothing else is using the disk. Writes go straight to the box's disk: download a partition first to keep a copy.</p>
+<p class="ready" data-need=box>Checking...</p>
+<button id=load data-need=box disabled>Read the disk</button> <span id=fsmsg class=note></span>
+<div id=parts></div>
+<div id=browser hidden>
+<h2 id=where></h2>
+<div class=bar>
+<button id=upbtn data-need=box>Upload files</button><input type=file id=upfile multiple hidden>
+<button id=mkdir data-need=box>New folder</button>
+<span id=free class=note></span>
+</div>
+<table id=files class=list><thead><tr><th>Name</th><th class=num>Size</th><th>Date</th><th></th></tr></thead><tbody></tbody></table>
+</div>
+</section>
+
+<section id=remote>
+<p class=note>Presses the WebTV remote's buttons and types on the IR keyboard, without either. On the <b>WebTV Bridge</b>
+screen the Bridge takes the keys itself. While the OS runs they go over the parallel port into the OS's IR input, where it
+handles them as keys from its IR receiver (builds the Bridge patches with that; not the 3xxx and 2046 ones).</p>
+<p class="ready" data-need=keys>Checking...</p>
+<div id=rc>
+<div class=rcrow><button data-rc=power data-need=keys title=Power>&#x23FB; Power</button></div>
+<div class=rcrow><button data-rc=home data-need=keys>Home</button><button data-rc=back data-need=keys>Back</button><button data-rc=options data-need=keys>Options</button><button data-rc=recent data-need=keys>Recent</button></div>
+<div id=pad>
+<button data-rc=scroll_up data-need=keys class=sc title="Scroll up">Scroll &#x25B2;</button><button data-rc=up data-need=keys title=Up>&#x25B2;</button><button data-rc=info data-need=keys>Info</button>
+<button data-rc=left data-need=keys title=Left>&#x25C0;</button><button data-rc=select data-need=keys class=go>Go</button><button data-rc=right data-need=keys title=Right>&#x25B6;</button>
+<button data-rc=scroll_down data-need=keys class=sc title="Scroll down">Scroll &#x25BC;</button><button data-rc=down data-need=keys title=Down>&#x25BC;</button><button data-rc=view data-need=keys>View</button>
+</div>
+<div id=digits></div>
+</div>
+<h2>Keyboard</h2>
+<label class=cap><input type=checkbox id=capture data-need=keys> Capture this computer's keyboard: keys go to the box as the IR keyboard's
+(click here again, or anywhere outside the page, to stop)</label>
+<form id=typef><input id=typetext class=field autocomplete=off placeholder='text to type on the IR keyboard'><button data-need=keys>Type</button></form>
+<h2>Monkey</h2>
+<p class=note>Random presses for stress testing: watch the Box Console for asserts, crashes and resets meanwhile.</p>
+<div class=bar><select id=mset><option value=nav>Navigation</option><option value=all>Navigation and typing</option></select>
+every <input id=mms class=field style='width:4em' value=400> ms <button id=monkey data-need=keys>Start</button> <span id=mmsg class=note></span></div>
+<p id=keymsg class=note></p>
+</section>
+
+<script>/*SCRIPT*/</script></body></html>

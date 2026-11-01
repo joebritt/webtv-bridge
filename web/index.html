@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebTV Emulator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>WebTV Emulator</h1>
+  <span class="sub">LC2 / SOLO1 &middot; WebTV Plus (INT-W200)</span>
+  <button id="readme-open" class="header-btn" aria-haspopup="dialog">README</button>
+  <button id="disk-open" class="header-btn" aria-haspopup="dialog">Disk browser</button>
+</header>
+
+<dialog id="disk-dlg" class="wide-dlg" aria-labelledby="disk-title">
+  <div class="readme-bar">
+    <b id="disk-title">Disk browser</b>
+    <span id="disk-source" class="hint disk-source"></span>
+    <span class="row" style="margin:0"><button id="disk-refresh">Refresh</button><button id="disk-close" aria-label="Close">Close</button></span>
+  </div>
+  <div class="disk-body">
+    <nav id="disk-parts" class="disk-parts" aria-label="Partitions"></nav>
+    <section id="disk-main" class="disk-main"></section>
+  </div>
+</dialog>
+
+<dialog id="readme" aria-labelledby="readme-title">
+  <div class="readme-bar">
+    <b id="readme-title">README</b>
+    <button id="readme-close" aria-label="Close">Close</button>
+  </div>
+  <article id="readme-body" class="readme-body"><p>Loading&hellip;</p></article>
+</dialog>
+
+<main>
+  <section class="tv-col">
+    <div class="tv">
+      <canvas id="screen" width="640" height="480" tabindex="0" aria-label="WebTV screen. Click to focus, then type to use the IR keyboard."></canvas>
+      <div id="overlay" class="overlay">
+        <p>Choose the boot ROM and disk image, then press <b>Start</b>.</p>
+      </div>
+    </div>
+    <div class="leds" aria-label="Front panel">
+      <span class="led" id="led-power"><i></i>Power</span>
+      <span class="led" id="led-connect"><i></i>Connected</span>
+      <span class="led" id="led-message"><i></i>Message</span>
+      <div class="graph-wrap">
+        <canvas id="speed-graph" class="speed-graph" width="150" height="32" role="img"
+          aria-label="Emulation speed over the last 15 seconds"></canvas>
+        <div id="graph-tip" class="graph-tip" hidden></div>
+      </div>
+      <span class="stats" id="stats" title="Emulation speed (% of real time) · CPU instructions per second · program counter · audio buffered · audio gaps so far">
+        <span id="st-speed" class="st w-speed">&ndash;</span>
+        <span id="st-mips" class="st w-mips"></span>
+        <span id="st-pc" class="st w-pc"></span>
+        <span id="st-audio" class="st w-audio"></span>
+        <span id="st-gaps" class="st w-gaps"></span>
+      </span>
+
+    </div>
+    <div class="remote" aria-label="Remote control">
+      <button data-btn="power" class="power" title="Power (F1)">&#x23FB; Power</button>
+      <button data-btn="home" title="Home">Home</button>
+      <button data-btn="back" title="Back">Back</button>
+      <button data-btn="options" title="Options">Options</button>
+      <button data-btn="recent" title="Recent">Recent</button>
+      <div class="dpad">
+        <button data-btn="up" class="up" aria-label="Up">&#9650;</button>
+        <button data-btn="left" class="left" aria-label="Left">&#9664;</button>
+        <button data-btn="select" class="go" aria-label="Go">Go</button>
+        <button data-btn="right" class="right" aria-label="Right">&#9654;</button>
+        <button data-btn="down" class="down" aria-label="Down">&#9660;</button>
+      </div>
+      <button data-btn="scroll_up" title="Scroll up">Scroll &#9650;</button>
+      <button data-btn="scroll_down" title="Scroll down">Scroll &#9660;</button>
+    </div>
+  </section>
+
+  <section class="side">
+    <div class="card quick">
+      <button id="start-all" class="primary big">Start everything</button>
+      <p class="hint" id="start-all-msg">Boots the box and turns it on once it is ready. With the relay network it starts minisrv and the relay first.</p>
+    </div>
+
+    <div class="card">
+      <h2>Machine</h2>
+      <label>Boot ROM
+        <select id="rom-src">
+          <option value="url">data/flipped_merged_boot.bin (server)</option>
+          <option value="file">Local file&hellip;</option>
+        </select>
+      </label>
+      <input type="file" id="rom-file" hidden>
+      <label>Disk image
+        <select id="disk-src">
+          <option value="url">data/debug_webtv_w200_7.bin (server)</option>
+          <option value="packed">data/debug_webtv_w200_7.wtvd (server, packed 3.8 MB)</option>
+          <option value="file">Local file&hellip;</option>
+          <option value="none">No disk</option>
+        </select>
+      </label>
+      <input type="file" id="disk-file" hidden>
+      <label>Network
+        <select id="net-mode">
+          <option value="builtin">Built-in WebTV service (no server needed)</option>
+          <option value="relay">Relay to a WebTV service (e.g. minisrv)</option>
+          <option value="offline">Offline</option>
+        </select>
+      </label>
+      <label id="relay-row">Relay URL <span class="hint">(tools/relay.mjs)</span>
+        <input type="text" id="relay-url" placeholder="ws://localhost:8081" spellcheck="false" autocomplete="off">
+      </label>
+      <label class="check"><input type="checkbox" id="auto-boot" checked> Answer "Disk Boot?" with y</label>
+      <label class="check"><input type="checkbox" id="persist" checked> Save box state (disk writes, NVRAM)</label>
+      <div class="row">
+        <button id="start" class="primary">Start</button>
+        <button id="pause" disabled>Pause</button>
+        <button id="reset" disabled>Reset</button>
+        <label class="check"><input type="checkbox" id="turbo"> Turbo</label>
+      </div>
+    </div>
+
+    <div class="card" id="services-card" hidden>
+      <h2>WebTV service</h2>
+      <div class="svc" data-svc="minisrv">
+        <span class="dot"></span><b>minisrv</b><span class="svc-state">&hellip;</span>
+        <button data-act="start">Start</button><button data-act="stop">Stop</button>
+      </div>
+      <div class="svc" data-svc="relay">
+        <span class="dot"></span><b>Relay</b><span class="svc-state">&hellip;</span>
+        <button data-act="start">Start</button><button data-act="stop">Stop</button>
+      </div>
+      <p class="hint" id="svc-msg">Start minisrv, then Start the box. The relay starts with it and points the box at minisrv. Services started here stop when this window closes.</p>
+      <div class="row">
+        <select id="svc-log-pick" aria-label="Service log"><option value="minisrv">minisrv log</option><option value="relay">relay log</option></select>
+        <label class="check"><input type="checkbox" id="svc-log-show"> Show</label>
+      </div>
+      <pre id="svc-log" class="svc-log" hidden></pre>
+    </div>
+
+    <div class="card">
+      <h2>Box state</h2>
+      <p class="hint" id="state-summary">&hellip;</p>
+      <label>Install an OS build
+        <select id="os-pick"><option value="file">Local file (_approm.o)&hellip;</option></select>
+      </label>
+      <input type="file" id="os-file" multiple hidden>
+      <label class="check"><input type="checkbox" id="os-lpt"> Patch it for the LPT modem bridge</label>
+      <p class="hint" id="os-msg">Writes the build into the selected disk's saved state; the image file is untouched. Builds from 1998 on need a matching boot ROM (above). The LPT patch makes the build go online through the parallel-port bridge instead of its modem. It uses the build's symbols.sym when there is one (pick it together with a local _approm.o); otherwise it finds what it needs in the code by signature.</p>
+      <div class="row">
+        <button id="os-install">Install OS</button>
+        <button id="reset-state">Erase box state&hellip;</button>
+      </div>
+    </div>
+
+    <div class="card console">
+      <h2>Debug console</h2>
+      <pre id="console" aria-live="off"></pre>
+      <form id="console-form">
+        <input id="console-input" autocomplete="off" placeholder="type to send to the debug serial port">
+      </form>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

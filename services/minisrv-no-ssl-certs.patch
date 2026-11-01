@@ -1,0 +1,16 @@
+--- a/includes/ServiceVault/wtv-head-waiter/login-stage-two.js	2026-11-01 15:09:20
++++ b/includes/ServiceVault/wtv-head-waiter/login-stage-two.js	2026-11-01 15:09:20
+@@ -126,9 +126,11 @@
+ 
+ 		headers += `wtv-log-url: wtv-log:/log
+ wtv-ssl-log-url: wtv-log:/log
+-wtv-ssl-certs-download-url: wtv-head-waiter:/download-ssl-certs
+-wtv-ssl-certs-checksum: 9BD865819765B66A2756F98FB4EEFBD4
+ `;
++		// No wtv-ssl-certs-download-url / wtv-ssl-certs-checksum: each makes RootList::Reset() empty
++		// the box's root list, and until the first page has drawn (RootList::GetRootList) a debug
++		// build's RootList::Idle asserts strcmp(url, fResource.GetURL())==0 and stops in its
++		// debugger (16406, at wtv-home:/splash). Without them the box keeps its built-in roots.
+ 
+ 		if (!limitedLogin && !limitedLoginRegistered) {
+ 			headers += `wtv-bypass-proxy: false

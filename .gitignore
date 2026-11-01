@@ -1,0 +1,16 @@
+# Not ours to publish: boot ROMs, OS builds, disk images, the LC2/SOLO documents
+data/
+old_docs/
+parallel2usb_v2_schematic.pdf
+# minisrv lives upstream (services/README.md); our change is services/minisrv-no-ssl-certs.patch
+services/minisrv/
+# build output, logs
+node_modules/
+dist/
+out/
+logs/
+pico/build/
+pico/sim/out/
+pico/host/port_test
+pico/host/*.dSYM/
+.DS_Store
