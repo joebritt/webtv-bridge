@@ -70,7 +70,7 @@ One core of the Pico runs the port engine out of RAM and answers every strobe fr
 
 ## Setting it up
 
-**1. Flash the firmware.** The easy way: download `lptbridge.uf2` from the [latest release](https://github.com/aferojoe/webtv-bridge/releases/latest), hold BOOTSEL while you plug the Pico 2 W in, and copy the file onto the `RP2350` drive that appears.
+**1. Flash the firmware.** The easy way: download `lptbridge.uf2` from the [latest release](../../releases/latest), hold BOOTSEL while you plug the Pico 2 W in, and copy the file onto the `RP2350` drive that appears.
 
 Or build it yourself. You'll need CMake, Ninja, `arm-none-eabi-gcc` 14.x and pico-sdk 2.1 or later:
 
