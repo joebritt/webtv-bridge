@@ -14,9 +14,10 @@ import { build } from 'esbuild';
 import { readFileSync, writeFileSync, statSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
+import { fileURLToPath } from 'node:url';
 import { basename, dirname, join, resolve } from 'node:path';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : def; };
 const romPath = resolve(root, opt('rom', 'data/flipped_merged_boot.bin'));
