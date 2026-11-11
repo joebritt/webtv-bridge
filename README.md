@@ -174,8 +174,18 @@ WebTV boot ROMs, OS builds and disk images aren't in this repo. The emulator and
 
 And to Steve, Bruce, Phil (we miss you), and everyone in the amazing WebTV family. WebTV was one of the most fun experiences of my life!
 
-Built by Joe Britt, with Claude.
-
 ## License
 
 MIT; see [LICENSE](LICENSE). minisrv is GPL-3.0 and lives in its own repository.
+
+Built by Joe Britt, with Claude.
+
+<br>
+<br>
+<br>
+
+<p align="center">
+  <img src="docs/images/photos/philburger.gif" width="320" height="240" alt="Phil Goldman eating a hamburger">
+  <br>
+  <em>Dedicated to the memory of my good friend and mentor, Phil Goldman.</em>
+</p>
