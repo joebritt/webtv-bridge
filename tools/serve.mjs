@@ -7,8 +7,9 @@ import { stat, open } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { createServices, handleServicesApi, handleFetchApi, handleBuildsApi } from './services.mjs';
+import { fileURLToPath } from 'node:url';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = fileURLToPath(new URL('..', import.meta.url));
 const port = Number(process.argv[2] || 8080);
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript',
@@ -52,4 +53,4 @@ createServer(async (req, res) => {
   } catch (e) {
     res.writeHead(404, { 'Content-Type': 'text/plain' }).end('not found');
   }
-}).listen(port, () => console.log(`WebTV emulator dev server: http://localhost:${port}/web/`));
+}).listen(port, () => console.log(`WebTV emulator dev server: http://localhost:${port}/web/index.html`));
